@@ -1,0 +1,44 @@
+Average Payrate of FullTime employees
+select avg(payrate) from "EMPLOYEE" group by employee_type HAVING employee_type='FullTime';
+
+
+Print the total money an employee along with his details has earned from the shifts:
+select e.employee_id, e.employee_name, e.employee_type, employee_hours.hours, employee_hours.hours*e.payrate as total_earned from 
+	(select employee_id, sum("to"-"from") as time_worked, EXTRACT(HOURS FROM sum("to"-"from")) as hours from "EMPLOYEE_ASSIGNMENT" group by employee_id)
+employee_hours, "EMPLOYEE" e where e.employee_id = employee_hours.employee_id;
+
+
+Print the final total after applying discount for each order:
+select order_cost.order_id, order_cost.total_cost, order_discount.discount, (order_cost.total_cost - order_cost.total_cost*order_discount.discount/100) as final_cost from 
+	(select order_id, sum(cost) as total_cost from 
+		(select oi.item_id, oi.order_id as order_id, i.price, oi.quantity, oi.quantity*i.price as cost from "ITEM" i, "ORDER_ITEMS" oi where oi.item_id = i.item_id) as cost_table 
+	group by order_id) as order_cost,
+	
+	(select o.order_id as order_id, o.customer_id, c.discount as discount from "ORDER" o, "CUSTOMER" c where o.customer_id = c.customer_id) as order_discount 
+	
+where order_cost.order_id = order_discount.order_id;
+
+
+
+
+
+
+Total number of items in an order:
+select order_id, sum(quantity) from "ORDER_ITEMS" group by order_id; 
+
+Print item_id, quantity and cost of item of each item in the order:
+select oi.item_id, oi.order_id, i.price, oi.quantity, oi.quantity*i.price as cost from "ITEM" i, "ORDER_ITEMS" oi where oi.item_id = i.item_id;
+
+
+Total amount for each order:
+select order_id, sum(cost) from (select oi.item_id, oi.order_id as order_id, i.price, oi.quantity, oi.quantity*i.price as cost from "ITEM" i, "ORDER_ITEMS" oi where oi.item_id = i.item_id) as cost_table group by order_id;
+
+Get the discount for each order based on the customer table:
+select o.order_id, o.customer_id, c.discount from "ORDER" o, "CUSTOMER" c where o.customer_id = c.customer_id;
+
+
+EXTRACT(HOURS FROM sum("to"-"from"))
+
+select employee_id, sum("to"-"from") as time_worked, EXTRACT(HOURS FROM sum("to"-"from")) from "EMPLOYEE_ASSIGNMENT" group by employee_id;
+
+
